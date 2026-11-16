@@ -30,6 +30,28 @@ val JetBrainsMonoFamily = FontFamily(
     Font(R.font.jetbrains_mono, FontWeight.Medium)
 )
 
+val NotoSansArabicFamily = FontFamily(
+    Font(R.font.noto_sans_arabic, FontWeight.Normal),
+    Font(R.font.noto_sans_arabic, FontWeight.Medium),
+    Font(R.font.noto_sans_arabic, FontWeight.SemiBold),
+    Font(R.font.noto_sans_arabic, FontWeight.Bold)
+)
+
+fun containsArabicScript(text: String): Boolean {
+    for (ch in text) {
+        val code = ch.code
+        if (code in 0x0600..0x06FF ||
+            code in 0x0750..0x077F ||
+            code in 0x08A0..0x08FF ||
+            code in 0xFB50..0xFDFF ||
+            code in 0xFE70..0xFEFF
+        ) {
+            return true
+        }
+    }
+    return false
+}
+
 private val LightColors = lightColorScheme(
     primary = Color(0xFF0284C7),
     onPrimary = Color.White,

@@ -9,7 +9,7 @@ class AssetRepository(private val context: Context) {
 
     private var cachedLayouts: List<LayoutInfo>? = null
     private var cachedEmojis: List<EmojiCategoryData>? = null
-    private val popupCache = HashMap<String, Map<String, List<String>>>()
+    private val popupCache = HashMap<String, Map<String, List<PopupSpec>>>()
 
     fun getAvailableMainLayouts(): List<LayoutInfo> {
         cachedLayouts?.let { return it }
@@ -62,6 +62,7 @@ class AssetRepository(private val context: Context) {
     ): KeyboardLayout {
         val raw = readLayoutSource(layoutId, customLayouts)
         val popupMap = loadPopupMap(localeTag)
+        val isArabic = isArabicContext(localeTag, layoutId)
         val parsedRows = if (raw.trimStart().startsWith("[")) {
             parseJsonRows(raw, popupMap, shiftState)
         } else {
@@ -70,16 +71,17 @@ class AssetRepository(private val context: Context) {
 
         val rows = mutableListOf<KeyRow>()
         if (showNumberRow) {
-            rows += loadNumberRow(shiftState)
+            rows += loadNumberRow(shiftState, isArabic)
         }
 
         val alphaRows = parsedRows.take(3).toMutableList()
-        // Attach shift & backspace to the 3rd row if it's a standard 3-row alpha layout
+        // Attach shift & backspace to the 3rd row if it's a standard 3-row alpha layout.
+        // Arabic is a unicameral script and does not use a Shift key, keeping Row 3 uncrowded.
         if (alphaRows.size >= 3) {
             val row3 = alphaRows[2].keys.toMutableList()
             val hasShift = row3.any { it.actionType == KeyActionType.SHIFT }
             val hasDelete = row3.any { it.actionType == KeyActionType.DELETE }
-            if (!hasShift) {
+            if (!hasShift && !isArabic) {
                 row3.add(
                     0,
                     KeySpec(
@@ -96,7 +98,7 @@ class AssetRepository(private val context: Context) {
                         label = "⌫",
                         actionType = KeyActionType.DELETE,
                         isFunctional = true,
-                        weight = 1.45f
+                        weight = if (isArabic) 1.35f else 1.45f
                     )
                 )
             }
@@ -110,18 +112,23 @@ class AssetRepository(private val context: Context) {
         }
 
         // Bottom functional row
-        rows += buildBottomAlphaRow(showLanguageSwitch, showEmojiKey, localeTag)
-        return KeyboardLayout(name = layoutId, rows = rows)
+        rows += buildBottomAlphaRow(showLanguageSwitch, showEmojiKey, localeTag, popupMap)
+        return KeyboardLayout(name = layoutId, rows = assignKeyIds(rows))
     }
 
-    fun loadSymbolsLayout(shifted: Boolean): KeyboardLayout {
-        val path = if (shifted) "layouts/more_symbols/symbols_shifted.txt" else "layouts/symbols/symbols.txt"
+    fun loadSymbolsLayout(shifted: Boolean, localeTag: String = "en-US"): KeyboardLayout {
+        val isArabic = localeTag.startsWith("ar", ignoreCase = true)
+        val path = when {
+            shifted -> "layouts/more_symbols/symbols_shifted.txt"
+            isArabic -> "layouts/symbols/symbols_arabic.txt"
+            else -> "layouts/symbols/symbols.txt"
+        }
         val raw = runCatching {
             context.assets.open(path).bufferedReader().use { it.readText() }
         }.getOrDefault("")
         val parsed = parseTxtRows(raw, emptyMap()).toMutableList()
         val rows = mutableListOf<KeyRow>()
-        rows += loadNumberRow(if (shifted) ShiftState.SHIFTED else ShiftState.OFF)
+        rows += loadNumberRow(if (shifted) ShiftState.SHIFTED else ShiftState.OFF, isArabic)
 
         if (parsed.size >= 3) {
             rows += parsed[0]
@@ -149,33 +156,60 @@ class AssetRepository(private val context: Context) {
             rows.addAll(parsed)
         }
 
+        val backLabel = if (isArabic) "أ ب ج" else "ABC"
+        val commaSpec = if (isArabic) {
+            KeySpec(
+                label = "،",
+                outputText = "،",
+                hintLabel = "؛",
+                popups = listOf(PopupSpec("؛"), PopupSpec("؟"), PopupSpec(","), PopupSpec(":")),
+                weight = 0.95f
+            )
+        } else {
+            KeySpec(",", hintLabel = ";", popups = listOf(PopupSpec(";"), PopupSpec(":")), weight = 0.95f)
+        }
+        val periodSpec = if (isArabic) {
+            KeySpec(
+                label = ".",
+                outputText = ".",
+                hintLabel = "؟",
+                popups = listOf(PopupSpec("؟"), PopupSpec("!"), PopupSpec("،"), PopupSpec("…")),
+                weight = 0.95f
+            )
+        } else {
+            KeySpec(".", hintLabel = "!", popups = listOf(PopupSpec("!"), PopupSpec("?"), PopupSpec("…")), weight = 0.95f)
+        }
+
         rows += KeyRow(
             listOf(
-                KeySpec("ABC", actionType = KeyActionType.SWITCH_ALPHA, isFunctional = true, weight = 1.5f),
-                KeySpec(",", popups = listOf(";", ":"), weight = 1f),
-                KeySpec("123", actionType = KeyActionType.SWITCH_NUMPAD, isFunctional = true, weight = 1f),
-                KeySpec(" ", outputText = " ", actionType = KeyActionType.SPACE, weight = 3.8f),
-                KeySpec(".", popups = listOf("!", "?", "…"), weight = 1f),
-                KeySpec("↵", outputText = "\n", actionType = KeyActionType.ENTER, isFunctional = true, weight = 1.5f)
+                KeySpec(backLabel, actionType = KeyActionType.SWITCH_ALPHA, isFunctional = true, weight = 1.4f),
+                commaSpec,
+                KeySpec("123", actionType = KeyActionType.SWITCH_NUMPAD, isFunctional = true, weight = 0.95f),
+                KeySpec(" ", outputText = " ", actionType = KeyActionType.SPACE, weight = 4.2f),
+                periodSpec,
+                KeySpec("↵", outputText = "\n", actionType = KeyActionType.ENTER, isFunctional = true, weight = 1.4f)
             )
         )
-        return KeyboardLayout(if (shifted) "symbols_shifted" else "symbols", rows)
+        return KeyboardLayout(
+            if (shifted) "symbols_shifted" else "symbols",
+            assignKeyIds(rows)
+        )
     }
 
     fun loadNumpadLayout(): KeyboardLayout {
         val rows = listOf(
             KeyRow(
                 listOf(
-                    KeySpec("+", popups = listOf("(", "<", "±"), isFunctional = true, weight = 1f),
+                    KeySpec("+", popups = listOf("(", "<", "±").map { PopupSpec(it) }, isFunctional = true, weight = 1f),
                     KeySpec("1", weight = 1.3f),
                     KeySpec("2", weight = 1.3f),
                     KeySpec("3", weight = 1.3f),
-                    KeySpec("%", popups = listOf("$", "€", "£"), isFunctional = true, weight = 1f)
+                    KeySpec("%", popups = listOf("$", "€", "£").map { PopupSpec(it) }, isFunctional = true, weight = 1f)
                 )
             ),
             KeyRow(
                 listOf(
-                    KeySpec("-", popups = listOf(")", ">", "~"), isFunctional = true, weight = 1f),
+                    KeySpec("-", popups = listOf(")", ">", "~").map { PopupSpec(it) }, isFunctional = true, weight = 1f),
                     KeySpec("4", weight = 1.3f),
                     KeySpec("5", weight = 1.3f),
                     KeySpec("6", weight = 1.3f),
@@ -184,7 +218,7 @@ class AssetRepository(private val context: Context) {
             ),
             KeyRow(
                 listOf(
-                    KeySpec("*", popups = listOf("/", "×", "÷"), isFunctional = true, weight = 1f),
+                    KeySpec("*", popups = listOf("/", "×", "÷").map { PopupSpec(it) }, isFunctional = true, weight = 1f),
                     KeySpec("7", weight = 1.3f),
                     KeySpec("8", weight = 1.3f),
                     KeySpec("9", weight = 1.3f),
@@ -197,13 +231,13 @@ class AssetRepository(private val context: Context) {
                     KeySpec(",", weight = 0.85f),
                     KeySpec("?123", actionType = KeyActionType.SWITCH_SYMBOLS, isFunctional = true, weight = 1f),
                     KeySpec("0", weight = 1.3f),
-                    KeySpec("=", popups = listOf("≠", "≈"), weight = 0.85f),
+                    KeySpec("=", popups = listOf("≠", "≈").map { PopupSpec(it) }, weight = 0.85f),
                     KeySpec(".", weight = 0.85f),
                     KeySpec("↵", outputText = "\n", actionType = KeyActionType.ENTER, isFunctional = true, weight = 1.2f)
                 )
             )
         )
-        return KeyboardLayout("numpad", rows)
+        return KeyboardLayout("numpad", assignKeyIds(rows))
     }
 
     fun loadEmojiCategories(): List<EmojiCategoryData> {
@@ -239,37 +273,97 @@ class AssetRepository(private val context: Context) {
     private fun buildBottomAlphaRow(
         showLanguageSwitch: Boolean,
         showEmojiKey: Boolean,
-        localeTag: String
+        localeTag: String,
+        popupMap: Map<String, List<PopupSpec>>
     ): KeyRow {
+        val isArabic = localeTag.startsWith("ar", ignoreCase = true)
         val keys = mutableListOf<KeySpec>()
-        keys += KeySpec("?123", actionType = KeyActionType.SWITCH_SYMBOLS, isFunctional = true, weight = 1.45f)
+        // 1. Symbols key (?123 / ؟١٢٣)
+        keys += KeySpec(
+            label = if (isArabic) "؟١٢٣" else "?123",
+            actionType = KeyActionType.SWITCH_SYMBOLS,
+            isFunctional = true,
+            weight = 1.35f
+        )
+        // 2. Comma key with Emoji integrated as primary long-press shortcut
+        val emojiPopup = PopupSpec(label = "☺", outputText = "", actionType = KeyActionType.EMOJI)
+        val tashkeelPopups = popupMap["punctuation"].orEmpty()
+        if (isArabic) {
+            val commaPopups = mergePopups(
+                listOf(emojiPopup, PopupSpec("؛"), PopupSpec("؟"), PopupSpec(","), PopupSpec(":")),
+                tashkeelPopups
+            )
+            keys += KeySpec(
+                label = "،",
+                outputText = "،",
+                hintLabel = "☺",
+                popups = commaPopups,
+                weight = 0.9f
+            )
+        } else {
+            keys += KeySpec(
+                label = ",",
+                outputText = ",",
+                hintLabel = "☺",
+                popups = listOf(emojiPopup, PopupSpec(";"), PopupSpec(":"), PopupSpec("'")),
+                weight = 0.9f
+            )
+        }
+        // 3. Language switch Globe key
         if (showLanguageSwitch) {
-            keys += KeySpec("🌐", actionType = KeyActionType.LANGUAGE_SWITCH, isFunctional = true, weight = 1f)
+            keys += KeySpec("🌐", actionType = KeyActionType.LANGUAGE_SWITCH, isFunctional = true, weight = 0.95f)
         }
-        keys += KeySpec(",", popups = listOf(";", ":", "'"), weight = 0.9f)
+        // Optional standalone emoji key only if explicitly enabled by user preference
         if (showEmojiKey) {
-            keys += KeySpec("☺", actionType = KeyActionType.EMOJI, isFunctional = true, weight = 1f)
+            keys += KeySpec("☺", actionType = KeyActionType.EMOJI, isFunctional = true, weight = 0.9f)
         }
-        val langLabel = Locale.forLanguageTag(localeTag).displayLanguage.ifBlank { localeTag }
+        // 4. Wide Spacebar showing current writing language
+        val langLabel = if (isArabic) {
+            "العربية"
+        } else {
+            Locale.forLanguageTag(localeTag).getDisplayLanguage(Locale.ENGLISH).ifBlank { localeTag }
+        }
         keys += KeySpec(
             label = langLabel,
             outputText = " ",
             actionType = KeyActionType.SPACE,
-            weight = 4.2f
+            weight = when {
+                showLanguageSwitch && showEmojiKey -> 3.65f
+                showLanguageSwitch -> 4.55f
+                showEmojiKey -> 4.6f
+                else -> 5.5f
+            }
         )
-        keys += KeySpec(
-            label = ".",
-            popups = listOf("!", "?", ",", "…", "/", "@", "#", ":", ";", "-", "'", "\""),
-            hintLabel = "…",
-            weight = 0.95f
-        )
-        keys += KeySpec("↵", outputText = "\n", actionType = KeyActionType.ENTER, isFunctional = true, weight = 1.5f)
+        // 5. Period key
+        if (isArabic) {
+            val periodPopups = mergePopups(
+                listOf("؟", "!", "،", "؛", "…", "«", "»", "-", "\"", "'", "(", ")").map { PopupSpec(it) },
+                tashkeelPopups
+            )
+            keys += KeySpec(
+                label = ".",
+                outputText = ".",
+                popups = periodPopups,
+                hintLabel = "؟",
+                weight = 0.9f
+            )
+        } else {
+            keys += KeySpec(
+                label = ".",
+                outputText = ".",
+                popups = listOf("!", "?", ",", "…", "/", "@", "#", ":", ";", "-", "'", "\"").map { PopupSpec(it) },
+                hintLabel = "!",
+                weight = 0.9f
+            )
+        }
+        // 6. Adaptive Enter / Action key
+        keys += KeySpec("↵", outputText = "\n", actionType = KeyActionType.ENTER, isFunctional = true, weight = 1.35f)
         return KeyRow(keys)
     }
 
-    private fun loadNumberRow(shiftState: ShiftState): KeyRow {
-        val digits = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
-        val shifted = listOf("!", "@", "#", "$", "%", "^", "&", "*", "(", ")")
+    private fun loadNumberRow(shiftState: ShiftState, isArabic: Boolean = false): KeyRow {
+        val westernDigits = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
+        val arabicDigits = listOf("١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩", "٠")
         val popupsList = listOf(
             listOf("¹", "½", "⅓", "¼"),
             listOf("²", "⅔"),
@@ -282,22 +376,26 @@ class AssetRepository(private val context: Context) {
             listOf("⁹"),
             listOf("⁰", "ⁿ", "∅")
         )
-        val useShifted = shiftState != ShiftState.OFF
+        val digits = if (isArabic) arabicDigits else westernDigits
+        val altDigits = if (isArabic) westernDigits else arabicDigits
         return KeyRow(
             digits.indices.map { idx ->
-                val ch = if (useShifted) shifted[idx] else digits[idx]
+                val ch = digits[idx]
+                val mergedPopups = listOf(PopupSpec(altDigits[idx])) + popupsList[idx].map { PopupSpec(it) }
                 KeySpec(
                     label = ch,
                     outputText = ch,
-                    hintLabel = if (useShifted) digits[idx] else shifted[idx],
-                    popups = popupsList[idx],
+                    shiftedLabel = ch,
+                    shiftedOutput = ch,
+                    hintLabel = null,
+                    popups = mergedPopups,
                     weight = 1f
                 )
             }
         )
     }
 
-    private fun parseTxtRows(raw: String, popupMap: Map<String, List<String>>): List<KeyRow> {
+    private fun parseTxtRows(raw: String, popupMap: Map<String, List<PopupSpec>>): List<KeyRow> {
         val rows = mutableListOf<KeyRow>()
         var currentRow = mutableListOf<KeySpec>()
 
@@ -313,13 +411,15 @@ class AssetRepository(private val context: Context) {
             if (line.startsWith("#")) continue
             val tokens = line.split(Regex("\\s+")).filter { it.isNotEmpty() }
             if (tokens.isEmpty()) continue
-            val primary = normalizeToken(tokens.first())
-            val inlinePopups = tokens.drop(1).map { normalizeToken(it) }
-            val mergedPopups = (inlinePopups + popupMap[primary.lowercase()].orEmpty()).distinct()
+            val primarySpec = parsePopupToken(tokens.first()) ?: continue
+            val inlinePopups = tokens.drop(1).mapNotNull { parsePopupToken(it) }
+            val mappedPopups = popupMap[primarySpec.label.lowercase()].orEmpty() +
+                popupMap[primarySpec.outputText.lowercase()].orEmpty()
+            val mergedPopups = mergePopups(inlinePopups, mappedPopups)
             currentRow += KeySpec(
-                label = primary,
-                outputText = primary,
-                hintLabel = mergedPopups.firstOrNull(),
+                label = primarySpec.label,
+                outputText = primarySpec.outputText,
+                hintLabel = mergedPopups.firstOrNull()?.label,
                 popups = mergedPopups
             )
         }
@@ -331,7 +431,7 @@ class AssetRepository(private val context: Context) {
 
     private fun parseJsonRows(
         raw: String,
-        popupMap: Map<String, List<String>>,
+        popupMap: Map<String, List<PopupSpec>>,
         shiftState: ShiftState
     ): List<KeyRow> {
         val rows = mutableListOf<KeyRow>()
@@ -351,7 +451,7 @@ class AssetRepository(private val context: Context) {
 
     private fun parseJsonKey(
         obj: JSONObject,
-        popupMap: Map<String, List<String>>,
+        popupMap: Map<String, List<PopupSpec>>,
         shiftState: ShiftState
     ): KeySpec? {
         val selector = obj.optString("$", "")
@@ -381,26 +481,28 @@ class AssetRepository(private val context: Context) {
         if (type == "placeholder") return null
         val rawLabel = resolved.optString("label", "")
         if (rawLabel.isEmpty()) return null
-        val label = normalizeToken(rawLabel)
+        val parsedPrimary = parsePopupToken(rawLabel) ?: return null
+        val label = parsedPrimary.label
         val width = resolved.optDouble("width", 0.0).toFloat()
         val weight = if (width > 0f) (width * 10f).coerceIn(0.6f, 3f) else 1f
 
-        val popups = mutableListOf<String>()
+        val inlinePopups = mutableListOf<PopupSpec>()
         val popupObj = resolved.optJSONObject("popup")
         if (popupObj != null) {
             popupObj.optJSONObject("main")?.optString("label")?.takeIf { it.isNotEmpty() }?.let {
-                popups += normalizeToken(it)
+                parsePopupToken(it)?.let { p -> inlinePopups += p }
             }
             val relevant = popupObj.optJSONArray("relevant")
             if (relevant != null) {
                 for (k in 0 until relevant.length()) {
                     val pLabel = relevant.optJSONObject(k)?.optString("label").orEmpty()
-                    if (pLabel.isNotEmpty()) popups += normalizeToken(pLabel)
+                    if (pLabel.isNotEmpty()) {
+                        parsePopupToken(pLabel)?.let { p -> inlinePopups += p }
+                    }
                 }
             }
         }
-        popups += popupMap[label.lowercase()].orEmpty()
-        val distinctPopups = popups.distinct()
+        val mergedPopups = mergePopups(inlinePopups, popupMap[label.lowercase()].orEmpty())
 
         return when (label.lowercase()) {
             "shift" -> KeySpec("⇧", actionType = KeyActionType.SHIFT, isFunctional = true, weight = weight.coerceAtLeast(1.35f))
@@ -409,19 +511,19 @@ class AssetRepository(private val context: Context) {
             "action", "enter" -> KeySpec("↵", outputText = "\n", actionType = KeyActionType.ENTER, isFunctional = true, weight = weight.coerceAtLeast(1.35f))
             else -> KeySpec(
                 label = label,
-                outputText = label,
-                hintLabel = distinctPopups.firstOrNull(),
-                popups = distinctPopups,
+                outputText = parsedPrimary.outputText,
+                hintLabel = mergedPopups.firstOrNull()?.label,
+                popups = mergedPopups,
                 weight = weight
             )
         }
     }
 
-    private fun loadPopupMap(localeTag: String): Map<String, List<String>> {
+    private fun loadPopupMap(localeTag: String): Map<String, List<PopupSpec>> {
         val lang = localeTag.substringBefore("-").lowercase()
         popupCache[lang]?.let { return it }
 
-        val map = HashMap<String, MutableList<String>>()
+        val map = HashMap<String, MutableList<PopupSpec>>()
         val candidateFiles = listOfNotNull(
             "locale_key_texts/$lang.txt",
             "locale_key_texts/more_popups_main.txt"
@@ -439,18 +541,76 @@ class AssetRepository(private val context: Context) {
                         if (!inPopupSection || line.isEmpty() || line.startsWith("#")) return@forEach
                         val parts = line.split(Regex("\\s+")).filter { it.isNotEmpty() }
                         if (parts.size >= 2) {
-                            val base = parts.first().lowercase()
+                            val base = normalizeToken(parts.first()).lowercase()
                             val bucket = map.getOrPut(base) { mutableListOf() }
-                            parts.drop(1).forEach { p ->
-                                if (p !in bucket) bucket += p
+                            parts.drop(1).forEach { rawToken ->
+                                val parsed = parsePopupToken(rawToken) ?: return@forEach
+                                if (bucket.none { it.outputText == parsed.outputText && it.label == parsed.label }) {
+                                    bucket += parsed
+                                }
                             }
                         }
                     }
                 }
             }
         }
+        // Mirror 'ه' popups to Arabic presentation form 'ﻩ' used in Hijai layout
+        map["ه"]?.let { hehPopups ->
+            val altBucket = map.getOrPut("ﻩ") { mutableListOf() }
+            hehPopups.forEach { p ->
+                if (altBucket.none { it.outputText == p.outputText && it.label == p.label }) {
+                    altBucket += p
+                }
+            }
+        }
         popupCache[lang] = map
         return map
+    }
+
+    private fun parsePopupToken(rawToken: String): PopupSpec? {
+        val trimmed = rawToken.trim()
+        if (trimmed.isEmpty()) return null
+        // Skip layout metadata directives such as !fixedColumnOrder!5
+        if (trimmed.startsWith("!") && trimmed.length > 1) return null
+        if (trimmed == "|") return PopupSpec(label = "|", outputText = "|")
+        if ("|" in trimmed) {
+            val idx = trimmed.indexOf('|')
+            val display = normalizeToken(trimmed.substring(0, idx))
+            val output = normalizeToken(trimmed.substring(idx + 1))
+            if (display.isEmpty() && output.isEmpty()) return null
+            val resolvedDisplay = display.ifEmpty { output }
+            val resolvedOutput = output.ifEmpty { resolvedDisplay }
+            return PopupSpec(label = resolvedDisplay, outputText = resolvedOutput)
+        }
+        val normalized = normalizeToken(trimmed)
+        return PopupSpec(label = normalized, outputText = normalized)
+    }
+
+    private fun mergePopups(first: List<PopupSpec>, second: List<PopupSpec>): List<PopupSpec> {
+        val out = mutableListOf<PopupSpec>()
+        val seen = HashSet<String>()
+        for (item in first + second) {
+            val key = "${item.label}\u0000${item.outputText}"
+            if (seen.add(key)) {
+                out += item
+            }
+        }
+        return out
+    }
+
+    private fun assignKeyIds(rows: List<KeyRow>): List<KeyRow> {
+        return rows.mapIndexed { rowIdx, row ->
+            KeyRow(
+                row.keys.mapIndexed { colIdx, key ->
+                    key.copy(keyId = "r${rowIdx}_c${colIdx}_${key.actionType.name}_${key.label}")
+                }
+            )
+        }
+    }
+
+    private fun isArabicContext(localeTag: String, layoutId: String): Boolean {
+        return localeTag.startsWith("ar", ignoreCase = true) ||
+            layoutId.startsWith("arabic", ignoreCase = true)
     }
 
     private fun normalizeToken(token: String): String {

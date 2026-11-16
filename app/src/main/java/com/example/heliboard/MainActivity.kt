@@ -1,9 +1,15 @@
 package com.example.heliboard
 
+import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivityResultRegistryOwner
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -27,11 +33,18 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -43,6 +56,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.heliboard.theme.HeliBoardTheme
 import com.example.heliboard.ui.HeliBoardViewModel
 import com.example.heliboard.ui.screens.AboutScreen
+import com.example.heliboard.ui.screens.AiSettingsScreen
 import com.example.heliboard.ui.screens.AppearanceScreen
 import com.example.heliboard.ui.screens.BackupScreen
 import com.example.heliboard.ui.screens.LanguagesScreen
@@ -52,6 +66,7 @@ import com.example.heliboard.ui.screens.PreferencesScreen
 import com.example.heliboard.ui.screens.SettingsHubScreen
 import com.example.heliboard.ui.screens.TextCorrectionScreen
 import com.example.heliboard.ui.screens.ToolbarScreen
+import com.example.heliboard.util.LocaleHelper
 import kotlinx.serialization.Serializable
 
 @Serializable object PlaygroundRoute
@@ -59,6 +74,7 @@ import kotlinx.serialization.Serializable
 @Serializable object LanguagesRoute
 @Serializable object SettingsRoute
 @Serializable object PreferencesRoute
+@Serializable object AiSettingsRoute
 @Serializable object ToolbarRoute
 @Serializable object TextCorrectionRoute
 @Serializable object PersonalDictionaryRoute
@@ -67,42 +83,128 @@ import kotlinx.serialization.Serializable
 
 private data class TopTab(
     val route: Any,
-    val label: String,
+    val tag: String,
+    val labelRes: Int,
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector
 )
 
 class MainActivity : ComponentActivity() {
+
+    private var onPermissionCallback: ((Boolean) -> Unit)? = null
+    private var launchedForImePermission: Boolean = false
+
+    private val audioPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        val fromIme = launchedForImePermission
+        launchedForImePermission = false
+        (application as? HeliBoardApp)?.notifyVoicePermissionResult(granted, fromImeRequest = fromIme)
+        onPermissionCallback?.invoke(granted)
+        if (fromIme) {
+            finish()
+        }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        val savedLang = LocaleHelper.readSavedAppLanguage(newBase)
+        val (localizedCtx, _) = LocaleHelper.createLocalizedContext(newBase, savedLang)
+        super.attachBaseContext(localizedCtx)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            HeliBoardTheme {
-                HeliBoardRoot()
+            val vm: HeliBoardViewModel = viewModel()
+            val settings by vm.settings.collectAsState()
+            val baseContext = LocalContext.current
+
+            val (localizedCtx, localizedConfig) = remember(settings.appLanguage, baseContext) {
+                LocaleHelper.createLocalizedContext(baseContext, settings.appLanguage)
+            }
+            val layoutDir = remember(settings.appLanguage) {
+                LocaleHelper.resolveLayoutDirection(settings.appLanguage)
+            }
+
+            LaunchedEffect(vm) {
+                onPermissionCallback = { granted ->
+                    vm.sandboxController.onVoicePermissionResult(granted)
+                }
+                if (intent?.getBooleanExtra(EXTRA_REQUEST_AUDIO_PERMISSION, false) == true) {
+                    intent.removeExtra(EXTRA_REQUEST_AUDIO_PERMISSION)
+                    launchedForImePermission = true
+                    audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                }
+            }
+
+            val registryOwner = LocalActivityResultRegistryOwner.current ?: this@MainActivity
+            val backDispatcherOwner = LocalOnBackPressedDispatcherOwner.current ?: this@MainActivity
+
+            CompositionLocalProvider(
+                LocalContext provides localizedCtx,
+                LocalConfiguration provides localizedConfig,
+                LocalLayoutDirection provides layoutDir,
+                LocalActivityResultRegistryOwner provides registryOwner,
+                LocalOnBackPressedDispatcherOwner provides backDispatcherOwner
+            ) {
+                HeliBoardTheme {
+                    HeliBoardRoot(
+                        viewModel = vm,
+                        initialOpenAiSettings = intent?.getBooleanExtra(EXTRA_OPEN_AI_SETTINGS, false) == true
+                    )
+                }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (intent.getBooleanExtra(EXTRA_REQUEST_AUDIO_PERMISSION, false)) {
+            intent.removeExtra(EXTRA_REQUEST_AUDIO_PERMISSION)
+            launchedForImePermission = true
+            audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
+    companion object {
+        const val EXTRA_REQUEST_AUDIO_PERMISSION = "com.example.heliboard.REQUEST_AUDIO_PERMISSION"
+        const val EXTRA_OPEN_AI_SETTINGS = "com.example.heliboard.OPEN_AI_SETTINGS"
     }
 }
 
 @Composable
-fun HeliBoardRoot(viewModel: HeliBoardViewModel = viewModel()) {
+fun HeliBoardRoot(
+    viewModel: HeliBoardViewModel = viewModel(),
+    initialOpenAiSettings: Boolean = false
+) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDest = backStackEntry?.destination
 
-    LaunchedEffect(navController) {
+    LaunchedEffect(navController, initialOpenAiSettings) {
         viewModel.onNavigateToSettings = {
             navController.navigate(SettingsRoute) {
+                launchSingleTop = true
+            }
+        }
+        viewModel.onNavigateToAiSettings = {
+            navController.navigate(AiSettingsRoute) {
+                launchSingleTop = true
+            }
+        }
+        if (initialOpenAiSettings) {
+            navController.navigate(AiSettingsRoute) {
                 launchSingleTop = true
             }
         }
     }
 
     val topTabs = listOf(
-        TopTab(PlaygroundRoute, "Keyboard", Icons.Filled.Keyboard, Icons.Outlined.Keyboard),
-        TopTab(AppearanceRoute, "Themes", Icons.Filled.Palette, Icons.Outlined.Palette),
-        TopTab(LanguagesRoute, "Languages", Icons.Filled.Language, Icons.Outlined.Language),
-        TopTab(SettingsRoute, "Settings", Icons.Filled.Settings, Icons.Outlined.Settings)
+        TopTab(PlaygroundRoute, "keyboard", R.string.nav_keyboard, Icons.Filled.Keyboard, Icons.Outlined.Keyboard),
+        TopTab(AppearanceRoute, "themes", R.string.nav_themes, Icons.Filled.Palette, Icons.Outlined.Palette),
+        TopTab(LanguagesRoute, "languages", R.string.nav_languages, Icons.Filled.Language, Icons.Outlined.Language),
+        TopTab(SettingsRoute, "settings", R.string.nav_settings, Icons.Filled.Settings, Icons.Outlined.Settings)
     )
 
     val showTopLevelNav = currentDest?.let { dest ->
@@ -132,17 +234,18 @@ fun HeliBoardRoot(viewModel: HeliBoardViewModel = viewModel()) {
                     NavigationBar {
                         topTabs.forEach { tab ->
                             val selected = currentDest?.hasRoute(tab.route::class) == true
+                            val label = stringResource(tab.labelRes)
                             NavigationBarItem(
                                 selected = selected,
                                 onClick = { navigateTab(tab.route) },
                                 icon = {
                                     Icon(
                                         imageVector = if (selected) tab.selectedIcon else tab.unselectedIcon,
-                                        contentDescription = tab.label
+                                        contentDescription = label
                                     )
                                 },
-                                label = { Text(tab.label) },
-                                modifier = Modifier.testTag("nav_${tab.label.lowercase()}")
+                                label = { Text(label) },
+                                modifier = Modifier.testTag("nav_${tab.tag}")
                             )
                         }
                     }
@@ -158,16 +261,18 @@ fun HeliBoardRoot(viewModel: HeliBoardViewModel = viewModel()) {
                     NavigationRail {
                         topTabs.forEach { tab ->
                             val selected = currentDest?.hasRoute(tab.route::class) == true
+                            val label = stringResource(tab.labelRes)
                             NavigationRailItem(
                                 selected = selected,
                                 onClick = { navigateTab(tab.route) },
                                 icon = {
                                     Icon(
                                         imageVector = if (selected) tab.selectedIcon else tab.unselectedIcon,
-                                        contentDescription = tab.label
+                                        contentDescription = label
                                     )
                                 },
-                                label = { Text(tab.label) }
+                                label = { Text(label) },
+                                modifier = Modifier.testTag("nav_${tab.tag}")
                             )
                         }
                     }
@@ -193,7 +298,9 @@ fun HeliBoardRoot(viewModel: HeliBoardViewModel = viewModel()) {
                     }
                     composable<SettingsRoute> {
                         SettingsHubScreen(
+                            viewModel = viewModel,
                             onOpenPreferences = { navController.navigate(PreferencesRoute) },
+                            onOpenAiSettings = { navController.navigate(AiSettingsRoute) },
                             onOpenToolbar = { navController.navigate(ToolbarRoute) },
                             onOpenTextCorrection = { navController.navigate(TextCorrectionRoute) },
                             onOpenPersonalDictionary = { navController.navigate(PersonalDictionaryRoute) },
@@ -203,6 +310,9 @@ fun HeliBoardRoot(viewModel: HeliBoardViewModel = viewModel()) {
                     }
                     composable<PreferencesRoute> {
                         PreferencesScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
+                    }
+                    composable<AiSettingsRoute> {
+                        AiSettingsScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
                     }
                     composable<ToolbarRoute> {
                         ToolbarScreen(viewModel = viewModel, onBack = { navController.popBackStack() })

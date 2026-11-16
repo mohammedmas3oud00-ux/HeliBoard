@@ -14,12 +14,15 @@ import com.example.heliboard.data.HeliSettings
 import com.example.heliboard.data.PersonalWordEntry
 import com.example.heliboard.data.SubtypeConfig
 import com.example.heliboard.data.ToolbarKey
+import com.example.heliboard.data.room.ClipboardSnippetEntity
 import com.example.heliboard.ime.HeliKeyboardController
 import com.example.heliboard.ime.SandboxInputTarget
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class ImeStatus(
@@ -36,6 +39,12 @@ class HeliBoardViewModel(application: Application) : AndroidViewModel(applicatio
 
     val settings = prefsRepo.settings
     val clipboard = prefsRepo.clipboard
+    val roomClipboardSnippets: StateFlow<List<ClipboardSnippetEntity>> =
+        app.clipboardRoomRepository.snippets.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
     val personalWords = prefsRepo.personalWords
     val customThemes = prefsRepo.customThemes
     val customLayouts = prefsRepo.customLayouts
@@ -47,6 +56,7 @@ class HeliBoardViewModel(application: Application) : AndroidViewModel(applicatio
     val sandboxText: StateFlow<TextFieldValue> = sandboxTarget.value
 
     var onNavigateToSettings: (() -> Unit)? = null
+    var onNavigateToAiSettings: (() -> Unit)? = null
 
     val sandboxController = HeliKeyboardController(
         context = application,
@@ -54,7 +64,8 @@ class HeliBoardViewModel(application: Application) : AndroidViewModel(applicatio
         assetRepo = assetRepo,
         suggestionEngine = suggestionEngine,
         target = sandboxTarget,
-        onOpenSettings = { onNavigateToSettings?.invoke() }
+        onOpenSettings = { onNavigateToSettings?.invoke() },
+        onOpenAiSettings = { onNavigateToAiSettings?.invoke() }
     )
 
     val keyboardUiState = sandboxController.uiState
@@ -163,28 +174,19 @@ class HeliBoardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun toggleToolbarKey(key: ToolbarKey) {
-        updateSettings { s ->
-            val list = s.toolbarKeys.toMutableList()
-            if (key.name in list) list.remove(key.name) else list.add(key.name)
-            s.copy(toolbarKeys = list)
-        }
+        prefsRepo.toggleToolbarKey(key)
+    }
+
+    fun moveToolbarKey(fromIndex: Int, toIndex: Int) {
+        prefsRepo.moveToolbarKey(fromIndex, toIndex)
     }
 
     fun moveToolbarKey(keyName: String, delta: Int) {
-        updateSettings { s ->
-            val list = s.toolbarKeys.toMutableList()
-            val idx = list.indexOf(keyName)
-            val target = idx + delta
-            if (idx >= 0 && target in list.indices) {
-                val item = list.removeAt(idx)
-                list.add(target, item)
-            }
-            s.copy(toolbarKeys = list)
-        }
+        prefsRepo.moveToolbarKey(keyName, delta)
     }
 
     fun resetToolbarKeys() {
-        updateSettings { s -> s.copy(toolbarKeys = HeliSettings().toolbarKeys) }
+        prefsRepo.resetToolbarKeys()
     }
 
     fun saveCustomTheme(spec: CustomThemeSpec) {

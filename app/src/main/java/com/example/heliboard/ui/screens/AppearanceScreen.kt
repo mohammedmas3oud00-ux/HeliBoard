@@ -53,8 +53,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.heliboard.R
 import com.example.heliboard.data.CustomThemeSpec
 import com.example.heliboard.data.ThemeStyle
 import com.example.heliboard.ime.HeliKeyboardView
@@ -67,7 +69,6 @@ fun AppearanceScreen(
     viewModel: HeliBoardViewModel,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val systemDark = isSystemInDarkTheme()
     val settings by viewModel.settings.collectAsState()
     val customThemes by viewModel.customThemes.collectAsState()
@@ -83,7 +84,7 @@ fun AppearanceScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Appearance & Themes", style = MaterialTheme.typography.headlineMedium)
+        Text(stringResource(R.string.appearance_title), style = MaterialTheme.typography.headlineMedium)
 
         // Live Keyboard Preview Card
         Card(
@@ -92,7 +93,7 @@ fun AppearanceScreen(
         ) {
             Column {
                 Text(
-                    text = "Live Keyboard Preview",
+                    text = stringResource(R.string.live_keyboard_preview),
                     style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                 )
@@ -117,13 +118,18 @@ fun AppearanceScreen(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("Keyboard Style", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.appearance_style_title), style = MaterialTheme.typography.titleMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     ThemeStyle.entries.forEach { style ->
+                        val styleLabel = when (style) {
+                            ThemeStyle.MATERIAL -> stringResource(R.string.appearance_style_material)
+                            ThemeStyle.ROUNDED -> stringResource(R.string.appearance_style_rounded)
+                            ThemeStyle.HOLO -> stringResource(R.string.appearance_style_holo)
+                        }
                         FilterChip(
                             selected = settings.themeStyle == style.id,
                             onClick = { viewModel.updateSettings { it.copy(themeStyle = style.id) } },
-                            label = { Text(style.displayName) },
+                            label = { Text(styleLabel) },
                             modifier = Modifier.testTag("style_${style.id.lowercase()}")
                         )
                     }
@@ -134,9 +140,9 @@ fun AppearanceScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Key Borders", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.appearance_key_borders), style = MaterialTheme.typography.bodyLarge)
                         Text(
-                            "Show elevated keycap outlines",
+                            stringResource(R.string.appearance_key_borders_sub),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -153,9 +159,9 @@ fun AppearanceScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Follow System Day/Night", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.appearance_day_night), style = MaterialTheme.typography.bodyLarge)
                         Text(
-                            "Automatically switch between Day and Night color themes",
+                            stringResource(R.string.appearance_day_night_sub),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -171,7 +177,7 @@ fun AppearanceScreen(
 
         // Day Theme Swatches
         ThemeSwatchSection(
-            title = if (settings.dayNightAuto) "Day Color Theme" else "Active Color Theme",
+            title = stringResource(if (settings.dayNightAuto) R.string.appearance_day_theme else R.string.appearance_active_theme),
             selectedThemeId = settings.themeName,
             customThemes = customThemes,
             systemDark = systemDark,
@@ -189,7 +195,7 @@ fun AppearanceScreen(
         // Night Theme Swatches
         if (settings.dayNightAuto) {
             ThemeSwatchSection(
-                title = "Night Color Theme",
+                title = stringResource(R.string.appearance_night_theme),
                 selectedThemeId = settings.nightThemeName,
                 customThemes = customThemes,
                 systemDark = true,
@@ -211,22 +217,43 @@ fun AppearanceScreen(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Text("Layout Geometry & Font Scale", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.appearance_geometry_title), style = MaterialTheme.typography.titleMedium)
 
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val heightPresets = listOf(
+                        Triple("compact", 0.85f, R.string.height_preset_compact),
+                        Triple("normal", 1.00f, R.string.height_preset_normal),
+                        Triple("tall", 1.15f, R.string.height_preset_tall),
+                        Triple("extra_tall", 1.35f, R.string.height_preset_extra_tall)
+                    )
+                    heightPresets.forEach { (id, scale, labelRes) ->
+                        FilterChip(
+                            selected = kotlin.math.abs(settings.keyboardHeightScale - scale) < 0.03f,
+                            onClick = { viewModel.updateSettings { it.copy(keyboardHeightScale = scale) } },
+                            label = { Text(stringResource(labelRes)) },
+                            modifier = Modifier.testTag("appearance_height_preset_$id")
+                        )
+                    }
+                }
                 ScaleSliderRow(
-                    title = "Keyboard Height",
-                    value = settings.keyboardHeightScale,
-                    range = 0.7f..1.4f,
+                    title = stringResource(R.string.appearance_height),
+                    value = settings.keyboardHeightScale.coerceIn(0.70f, 1.50f),
+                    range = 0.70f..1.50f,
                     onValueChange = { v -> viewModel.updateSettings { it.copy(keyboardHeightScale = v) } }
                 )
                 ScaleSliderRow(
-                    title = "Key Spacing",
+                    title = stringResource(R.string.appearance_gap),
                     value = settings.keyGapScale,
                     range = 0.5f..2.0f,
                     onValueChange = { v -> viewModel.updateSettings { it.copy(keyGapScale = v) } }
                 )
                 ScaleSliderRow(
-                    title = "Key Label Font Size",
+                    title = stringResource(R.string.appearance_font_size),
                     value = settings.fontScale,
                     range = 0.7f..1.4f,
                     onValueChange = { v -> viewModel.updateSettings { it.copy(fontScale = v) } }
@@ -280,7 +307,7 @@ private fun ThemeSwatchSection(
                 ) {
                     Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("Custom")
+                    Text(stringResource(R.string.appearance_custom_btn))
                 }
             }
 
@@ -306,7 +333,7 @@ private fun ThemeSwatchSection(
             }
 
             if (customThemes.isNotEmpty()) {
-                Text("Your Custom Themes", style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.appearance_your_custom), style = MaterialTheme.typography.labelLarge)
                 customThemes.forEach { custom ->
                     Surface(
                         shape = RoundedCornerShape(12.dp),
@@ -333,10 +360,10 @@ private fun ThemeSwatchSection(
                             Spacer(Modifier.width(10.dp))
                             Text(custom.name, modifier = Modifier.weight(1f), fontWeight = FontWeight.Medium)
                             IconButton(onClick = { onEditCustom(custom) }) {
-                                Icon(Icons.Default.Edit, contentDescription = "Edit custom theme")
+                                Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.appearance_edit_custom))
                             }
                             IconButton(onClick = { onDeleteCustom(custom.name) }) {
-                                Icon(Icons.Default.Delete, contentDescription = "Delete custom theme")
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.appearance_delete_custom))
                             }
                         }
                     }
@@ -409,7 +436,7 @@ private fun ThemeSwatchCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = "Selected",
+                        contentDescription = stringResource(R.string.status_selected),
                         tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(11.dp)
                     )
@@ -464,13 +491,13 @@ private fun CustomThemeEditorDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Custom Theme Editor") },
+        title = { Text(stringResource(R.string.appearance_custom_editor)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedTextField(
                     value = spec.name,
                     onValueChange = { spec = spec.copy(name = it) },
-                    label = { Text("Theme Name") },
+                    label = { Text(stringResource(R.string.appearance_theme_name)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -479,7 +506,7 @@ private fun CustomThemeEditorDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Dark Palette")
+                    Text(stringResource(R.string.appearance_dark_palette))
                     Switch(
                         checked = spec.isDark,
                         onCheckedChange = { spec = spec.copy(isDark = it) }
@@ -487,11 +514,11 @@ private fun CustomThemeEditorDialog(
                 }
 
                 val slots = listOf(
-                    "accent" to ("Accent" to spec.accentColor),
-                    "bg" to ("Background" to spec.backgroundColor),
-                    "key" to ("Keys" to spec.keyColor),
-                    "func" to ("Functional" to spec.functionalKeyColor),
-                    "text" to ("Text" to spec.textColor)
+                    "accent" to (stringResource(R.string.appearance_slot_accent) to spec.accentColor),
+                    "bg" to (stringResource(R.string.appearance_slot_bg) to spec.backgroundColor),
+                    "key" to (stringResource(R.string.appearance_slot_keys) to spec.keyColor),
+                    "func" to (stringResource(R.string.appearance_slot_func) to spec.functionalKeyColor),
+                    "text" to (stringResource(R.string.appearance_slot_text) to spec.textColor)
                 )
                 Row(
                     modifier = Modifier
@@ -516,7 +543,7 @@ private fun CustomThemeEditorDialog(
                     }
                 }
 
-                Text("Pick Color for Selected Slot", style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.appearance_pick_slot_color), style = MaterialTheme.typography.labelLarge)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -551,11 +578,11 @@ private fun CustomThemeEditorDialog(
                 onClick = { if (spec.name.isNotBlank()) onSave(spec) },
                 enabled = spec.name.isNotBlank()
             ) {
-                Text("Save Theme")
+                Text(stringResource(R.string.appearance_save_theme))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         }
     )
 }

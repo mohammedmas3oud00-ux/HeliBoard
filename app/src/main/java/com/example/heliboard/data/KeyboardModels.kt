@@ -9,7 +9,10 @@ enum class KeyboardMode {
     NUMPAD,
     EMOJI,
     CLIPBOARD,
-    DPAD
+    DPAD,
+    AI_WRITING,
+    AI_TRANSLATE,
+    TOOLBAR_CUSTOMIZE
 }
 
 enum class ShiftState {
@@ -32,6 +35,7 @@ enum class ToolbarMode(val id: String, val displayName: String) {
 }
 
 enum class ToolbarKey(val label: String) {
+    VOICE("Voice"),
     EMOJI("Emoji"),
     CLIPBOARD("Clipboard"),
     NUMPAD("Numpad"),
@@ -49,7 +53,19 @@ enum class ToolbarKey(val label: String) {
     CLEAR_CLIPBOARD("Clear Clipboard"),
     LEFT("Cursor Left"),
     RIGHT("Cursor Right"),
-    SETTINGS("Settings")
+    SETTINGS("Settings"),
+    AI_WRITING("AI Writing"),
+    TRANSLATE("Translate")
+}
+
+enum class ImeActionType {
+    ENTER,
+    SEARCH,
+    SEND,
+    DONE,
+    NEXT,
+    GO,
+    PREVIOUS
 }
 
 enum class KeyActionType {
@@ -67,16 +83,24 @@ enum class KeyActionType {
     PLACEHOLDER
 }
 
+@Serializable
+data class PopupSpec(
+    val label: String,
+    val outputText: String = label,
+    val actionType: KeyActionType = KeyActionType.CHARACTER
+)
+
 data class KeySpec(
     val label: String,
     val outputText: String = label,
     val shiftedLabel: String? = null,
     val shiftedOutput: String? = null,
     val hintLabel: String? = null,
-    val popups: List<String> = emptyList(),
+    val popups: List<PopupSpec> = emptyList(),
     val actionType: KeyActionType = KeyActionType.CHARACTER,
     val isFunctional: Boolean = false,
-    val weight: Float = 1f
+    val weight: Float = 1f,
+    val keyId: String = ""
 )
 
 data class KeyRow(
@@ -113,10 +137,18 @@ data class EmojiCategoryData(
 @Serializable
 data class ClipboardEntry(
     val id: Long,
-    val text: String,
+    val text: String = "",
     val timestamp: Long,
-    val isPinned: Boolean = false
-)
+    val isPinned: Boolean = false,
+    val imageUri: String? = null,
+    val localImagePath: String? = null,
+    val mimeType: String? = null,
+    val pinnedOrder: Int? = null,
+    val contentHash: String? = null
+) {
+    val isImage: Boolean
+        get() = !imageUri.isNullOrBlank() || !localImagePath.isNullOrBlank()
+}
 
 @Serializable
 data class PersonalWordEntry(
@@ -150,14 +182,14 @@ data class HeliSettings(
     val keyboardHeightScale: Float = 1.0f,
     val keyGapScale: Float = 1.0f,
     val fontScale: Float = 1.0f,
-    val showNumberRow: Boolean = false,
+    val showNumberRow: Boolean = true,
     val showHints: Boolean = true,
     val keyPopupEnabled: Boolean = true,
     val vibrateOnKeypress: Boolean = true,
     val soundOnKeypress: Boolean = false,
     val longPressTimeoutMs: Int = 300,
     val autoCap: Boolean = true,
-    val doubleSpacePeriod: Boolean = true,
+    val doubleSpacePeriod: Boolean = false,
     val autoCorrection: Boolean = true,
     val showSuggestions: Boolean = true,
     val suggestEmojis: Boolean = true,
@@ -167,9 +199,12 @@ data class HeliSettings(
     val splitKeyboard: Boolean = false,
     val incognitoMode: Boolean = false,
     val showLanguageSwitchKey: Boolean = true,
-    val showEmojiKey: Boolean = true,
+    val showEmojiKey: Boolean = false,
     val toolbarMode: String = ToolbarMode.EXPANDABLE.id,
     val toolbarKeys: List<String> = listOf(
+        ToolbarKey.VOICE.name,
+        ToolbarKey.AI_WRITING.name,
+        ToolbarKey.TRANSLATE.name,
         ToolbarKey.EMOJI.name,
         ToolbarKey.CLIPBOARD.name,
         ToolbarKey.NUMPAD.name,
@@ -186,12 +221,24 @@ data class HeliSettings(
     val recentEmojis: List<String> = listOf("😀", "😂", "❤️", "👍", "🙏", "🔥", "✨", "🎉"),
     val clipboardHistoryEnabled: Boolean = true,
     val clipboardPinnedFirst: Boolean = true,
+    val clipboardRetentionMinutes: Int = 120,
+    val appLanguage: String = "system",
+    val arabicVoiceDialect: String = "ar-EG",
+    val preferOfflineVoice: Boolean = true,
+    val continuousVoiceDictation: Boolean = true,
+    val keyPressSensitivity: Float = 0.65f,
+    val instantKeypressCommit: Boolean = false,
+    val aiProxyUrl: String = "",
+    val aiProxyAuthToken: String = "",
+    val aiCloudNoticeAccepted: Boolean = false,
+    val schemaVersion: Int = 6,
     val selectedSubtypeLocale: String = "en-US",
     val subtypes: List<SubtypeConfig> = listOf(
         SubtypeConfig("en-US", "English (US)", "qwerty", true),
-        SubtypeConfig("en-GB", "English (UK)", "qwerty", true),
-        SubtypeConfig("de-DE", "German", "qwertz", true),
-        SubtypeConfig("fr-FR", "French", "azerty", true),
+        SubtypeConfig("ar", "العربية", "arabic", true),
+        SubtypeConfig("en-GB", "English (UK)", "qwerty", false),
+        SubtypeConfig("de-DE", "German", "qwertz", false),
+        SubtypeConfig("fr-FR", "French", "azerty", false),
         SubtypeConfig("es-ES", "Spanish", "qwerty", false)
     )
 )

@@ -1,0 +1,14 @@
+{
+  "name": "heliboard-gemini-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Standalone authenticated and rate-limited Gemini proxy server for HeliBoard AI Writing and Translation.",
+  "type": "module",
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/server.test.js"
+  }
+}

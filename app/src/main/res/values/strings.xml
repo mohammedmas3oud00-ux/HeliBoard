@@ -3,6 +3,7 @@
     <string name="app_name">HeliBoard</string>
     <string name="ime_name">HeliBoard</string>
     <string name="ime_settings">HeliBoard Settings</string>
+
     <string name="subtype_en_us">English (US)</string>
     <string name="subtype_en_gb">English (UK)</string>
     <string name="subtype_de">German</string>
@@ -13,4 +14,387 @@
     <string name="subtype_hi">Hindi</string>
     <string name="subtype_ko">Korean</string>
     <string name="subtype_ru">Russian</string>
+
+    <!-- Navigation Tabs -->
+    <string name="nav_keyboard">Keyboard</string>
+    <string name="nav_themes">Themes</string>
+    <string name="nav_languages">Languages</string>
+    <string name="nav_settings">Settings</string>
+    <string name="action_back">Back</string>
+    <string name="action_close">Close</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_reset">Reset</string>
+    <string name="action_add">Add</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="status_active">ACTIVE</string>
+    <string name="status_selected">Selected</string>
+
+    <!-- Clipboard -->
+    <string name="clipboard_title">Clipboard (%1$d)</string>
+    <string name="clipboard_reorder_pinned">Reorder pinned</string>
+    <string name="clipboard_reorder_done">Done</string>
+    <string name="clipboard_clear">Clear</string>
+    <string name="clipboard_clear_unpinned_desc">Clear unpinned</string>
+    <string name="clipboard_empty">Copied text and images will appear here automatically.</string>
+    <string name="clipboard_reorder_empty">Pin items first to reorder them.</string>
+    <string name="clipboard_reorder_hint">Drag or use up/down buttons to reorder pinned items.</string>
+    <string name="clipboard_move_up">Move up</string>
+    <string name="clipboard_move_down">Move down</string>
+    <string name="clipboard_drag_handle">Drag to reorder</string>
+    <string name="clipboard_pin">Pin clip</string>
+    <string name="clipboard_unpin">Unpin clip</string>
+    <string name="clipboard_delete">Delete clip</string>
+    <string name="clipboard_image_label">Image</string>
+    <string name="clipboard_image_unavailable">Image unavailable</string>
+    <string name="clipboard_image_unavailable_hint">This image is no longer available. You can delete it.</string>
+    <string name="clipboard_image_not_supported">This app does not support pasting images.</string>
+    <string name="clipboard_pinned_badge">Pinned</string>
+    <string name="clipboard_incognito_notice">Incognito active: new copies are not saved</string>
+    <string name="clipboard_sensitive_notice">Sensitive field: clipboard capture paused</string>
+    <string name="clipboard_back_abc">ABC</string>
+    <string name="clipboard_section_title">Clipboard</string>
+    <string name="clipboard_enable_history">Clipboard History</string>
+    <string name="clipboard_enable_history_sub">Save recently copied text and images locally</string>
+    <string name="clipboard_pinned_first">Show Pinned Clips First</string>
+    <string name="clipboard_pinned_first_sub">Keep pinned items at the top in your custom order</string>
+    <string name="clipboard_retention_title">Recent Clip Retention</string>
+    <string name="clipboard_retention_10m">10 min</string>
+    <string name="clipboard_retention_1h">1 hour</string>
+    <string name="clipboard_retention_2h">2 hours</string>
+    <string name="clipboard_retention_24h">24 hours</string>
+    <string name="clipboard_retention_forever">Forever</string>
+
+    <!-- Sandbox & Keyboard Home -->
+    <string name="hero_badge_offline">Local-first typing • On-demand AI proxy</string>
+    <string name="hero_subtitle">Privacy-first customizable keyboard</string>
+    <string name="ime_status_active">HeliBoard is active system-wide</string>
+    <string name="ime_status_step2">Step 2: Select HeliBoard as input method</string>
+    <string name="ime_status_step1">Step 1: Enable HeliBoard in Android Settings</string>
+    <string name="ime_status_active_sub">Ready to type across all apps, or test layouts and themes below.</string>
+    <string name="ime_status_setup_sub">Enable it for system apps, or try the live keyboard sandbox right below.</string>
+    <string name="ime_enable_keyboard">Enable Keyboard</string>
+    <string name="ime_settings_button">IME Settings</string>
+    <string name="ime_switch_input">Switch Input</string>
+    <string name="sandbox_theme_chip">Theme: %1$s</string>
+    <string name="sandbox_number_row">Number Row</string>
+    <string name="sandbox_one_handed">One-Handed</string>
+    <string name="sandbox_split">Split</string>
+    <string name="sandbox_accepts_images">Target accepts images</string>
+    <string name="sandbox_pasted_images_label">Pasted images (%1$d)</string>
+    <string name="sandbox_label">Live Keyboard Sandbox (type or dictate below)</string>
+    <string name="sandbox_placeholder">Tap keys, long-press for symbols, or tap the mic to dictate…</string>
+    <string name="sandbox_clear_desc">Clear sandbox text</string>
+    <string name="live_keyboard_preview">Live Keyboard Preview</string>
+    <string name="incognito_mode_label">Incognito Mode</string>
+
+    <!-- Voice Dictation -->
+    <string name="voice_mic_content_desc">Voice dictation</string>
+    <string name="voice_listening">Listening…</string>
+    <string name="voice_listening_continuous">Listening continuously • stops after 6s silence</string>
+    <string name="voice_processing">Processing…</string>
+    <string name="voice_stop">Stop</string>
+    <string name="voice_translate">Translate</string>
+    <string name="voice_cancel">Cancel</string>
+    <string name="voice_offline_badge">Offline</string>
+    <string name="voice_permission_required">Microphone permission is required for voice dictation.</string>
+    <string name="voice_permission_denied">Microphone permission was denied. Grant access to dictate by voice.</string>
+    <string name="voice_grant_permission">Grant Permission</string>
+    <string name="voice_disabled_password">Voice dictation is disabled in password fields.</string>
+    <string name="voice_local_unavailable">On-device voice recognition is unavailable for %1$s on this device.</string>
+    <string name="voice_use_system">Use System Voice</string>
+    <string name="voice_system_unavailable">No system voice input service is available on this device.</string>
+    <string name="voice_error_no_match">No speech detected. Try speaking again.</string>
+    <string name="voice_error_audio">Audio capture error. Check your microphone.</string>
+    <string name="voice_error_busy">Speech recognizer is busy. Please try again.</string>
+    <string name="voice_dialect_title">Arabic Voice Recognition Dialect</string>
+    <string name="voice_dialect_sub">Preferred local dialect when dictating in Arabic</string>
+    <string name="voice_dialect_eg">Egypt (ar-EG)</string>
+    <string name="voice_dialect_sa">Saudi Arabia (ar-SA)</string>
+    <string name="voice_dialect_ar">Standard Arabic (ar)</string>
+    <string name="voice_offline_pref">Prefer Offline Voice Recognition</string>
+    <string name="voice_offline_pref_sub">Use on-device recognition without internet when a local language pack is installed</string>
+    <string name="voice_offline_settings">Offline Voice Packs</string>
+    <string name="voice_offline_settings_sub">Check or download Arabic/English packs in system Voice Input settings</string>
+    <string name="voice_offline_unavailable_hint">On-device voice pack is not ready for %1$s. Download it in Voice Settings or enable internet.</string>
+    <string name="voice_continuous_pref">Continuous Long Dictation</string>
+    <string name="voice_continuous_pref_sub">Keep listening across short pauses or stutters; auto-stop only after 6 seconds of silence</string>
+
+    <!-- Settings Language -->
+    <string name="settings_language_title">Settings language</string>
+    <string name="settings_language_subtitle">Applies immediately to settings and menus, independent of typing language</string>
+    <string name="settings_language_system">System default</string>
+    <string name="settings_language_ar">العربية</string>
+    <string name="settings_language_en">English</string>
+
+    <!-- Settings Hub -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_preferences_title">Preferences</string>
+    <string name="settings_preferences_sub">Keyboard height, number row, vibration, sound, key popup &amp; split</string>
+    <string name="settings_toolbar_title">Toolbar</string>
+    <string name="settings_toolbar_sub">Toolbar visibility, enabled buttons &amp; custom key order</string>
+    <string name="settings_text_correction_title">Text Correction</string>
+    <string name="settings_text_correction_sub">Autocorrect, auto-cap, suggestions, emoji match &amp; learned words</string>
+    <string name="settings_personal_dict_title">Personal Dictionary</string>
+    <string name="settings_personal_dict_sub">Custom words, typing shortcuts &amp; wordlist import</string>
+    <string name="settings_backup_title">Backup &amp; Restore</string>
+    <string name="settings_backup_sub">Export or import settings, custom themes, layouts &amp; words</string>
+    <string name="settings_about_title">About HeliBoard</string>
+    <string name="settings_about_sub">Privacy architecture, cloud disclosure &amp; open-source licenses</string>
+    <string name="settings_ai_title">AI Writing &amp; Translation</string>
+    <string name="settings_ai_sub">Gemini proxy server URL, bearer token &amp; cloud notice</string>
+
+    <!-- Preferences -->
+    <string name="pref_show_number_row">Show Number Row</string>
+    <string name="pref_show_number_row_sub">Dedicated number row above letters</string>
+    <string name="pref_show_hints">Show Key Hints</string>
+    <string name="pref_show_hints_sub">Display secondary symbol hint in key corner</string>
+    <string name="pref_key_popup">Popup on Keypress</string>
+    <string name="pref_key_popup_sub">Show floating preview bubble above tapped keys</string>
+    <string name="pref_vibrate">Vibrate on Keypress</string>
+    <string name="pref_vibrate_sub">Haptic feedback on key tap</string>
+    <string name="pref_sound">Sound on Keypress</string>
+    <string name="pref_sound_sub">System keypress audio click</string>
+    <string name="pref_space_swipe">Spacebar Swipe Moves Cursor</string>
+    <string name="pref_space_swipe_sub">Slide horizontally on spacebar to move cursor (globe switches languages)</string>
+    <string name="pref_bottom_emoji">Show Separate Emoji Key on Bottom Row</string>
+    <string name="pref_bottom_emoji_sub">Off by default; emoji shortcut stays on comma long-press &amp; toolbar</string>
+    <string name="pref_one_handed">One-Handed Mode</string>
+    <string name="pref_one_handed_sub">Compact keyboard aligned to left or right edge</string>
+    <string name="pref_split">Split Keyboard</string>
+    <string name="pref_split_sub">Add center gap between left and right hand keys</string>
+    <string name="pref_long_press_delay">Long-Press Delay</string>
+    <string name="pref_long_press_ms">%1$d ms</string>
+    <string name="pref_key_sensitivity_title">Key Press Sensitivity</string>
+    <string name="pref_key_sensitivity_sub">Prevent missed letters during fast typing and adjust tap response</string>
+    <string name="sensitivity_preset_balanced">Balanced</string>
+    <string name="sensitivity_preset_fast">Fast</string>
+    <string name="sensitivity_preset_ultra">Ultra-Fast</string>
+    <string name="pref_instant_commit">Instant Touch Commit</string>
+    <string name="pref_instant_commit_sub">Type letter immediately on finger touch for zero missed keys</string>
+
+    <!-- Appearance & Themes -->
+    <string name="appearance_title">Appearance &amp; Themes</string>
+    <string name="appearance_style_title">Keyboard Style</string>
+    <string name="appearance_style_material">Material</string>
+    <string name="appearance_style_rounded">Rounded</string>
+    <string name="appearance_style_holo">Holo</string>
+    <string name="appearance_key_borders">Key Borders &amp; Elevation</string>
+    <string name="appearance_key_borders_sub">Show crisp rounded white keycaps with subtle elevation</string>
+    <string name="appearance_day_night">Follow System Day/Night</string>
+    <string name="appearance_day_night_sub">Automatically switch between Day and Night color themes</string>
+    <string name="appearance_day_theme">Day Color Theme</string>
+    <string name="appearance_active_theme">Active Color Theme</string>
+    <string name="appearance_night_theme">Night Color Theme</string>
+    <string name="appearance_custom_btn">Custom</string>
+    <string name="appearance_your_custom">Your Custom Themes</string>
+    <string name="appearance_geometry_title">Layout Geometry &amp; Font Scale</string>
+    <string name="appearance_height">Keyboard Height</string>
+    <string name="pref_keyboard_height_sub">Adjust overall height of keyboard rows and panels</string>
+    <string name="height_preset_compact">Compact</string>
+    <string name="height_preset_normal">Normal</string>
+    <string name="height_preset_tall">Tall</string>
+    <string name="height_preset_extra_tall">Extra Tall</string>
+    <string name="appearance_gap">Key Spacing</string>
+    <string name="appearance_font_size">Key Label Font Size</string>
+    <string name="appearance_custom_editor">Custom Theme Editor</string>
+    <string name="appearance_theme_name">Theme Name</string>
+    <string name="appearance_dark_palette">Dark Palette</string>
+    <string name="appearance_pick_slot_color">Pick Color for Selected Slot</string>
+    <string name="appearance_save_theme">Save Theme</string>
+    <string name="appearance_slot_accent">Accent</string>
+    <string name="appearance_slot_bg">Background</string>
+    <string name="appearance_slot_keys">Keys</string>
+    <string name="appearance_slot_func">Functional</string>
+    <string name="appearance_slot_text">Text</string>
+    <string name="appearance_edit_custom">Edit custom theme</string>
+    <string name="appearance_delete_custom">Delete custom theme</string>
+
+    <!-- Languages & Layouts -->
+    <string name="languages_title">Languages &amp; Layouts</string>
+    <string name="languages_builtin_count">%1$d built-in layouts available</string>
+    <string name="languages_layout_label">Layout: %1$s</string>
+    <string name="languages_customized_suffix"> (customized)</string>
+    <string name="languages_change_layout">Change Layout</string>
+    <string name="languages_edit_keys">Edit Keys</string>
+    <string name="languages_remove_desc">Remove language</string>
+    <string name="languages_choose_layout">Choose Keyboard Layout</string>
+    <string name="languages_search_layouts">Search %1$d layouts…</string>
+    <string name="languages_edit_layout_title">Edit Layout: %1$s</string>
+    <string name="languages_edit_layout_hint">Each line is a key (with optional popup keys separated by spaces). Blank lines separate rows.</string>
+    <string name="languages_reset_default">Reset to Default</string>
+    <string name="languages_add_title">Add Language</string>
+    <string name="languages_all_added">All preset languages are already added. You can change any language\'s layout from the list.</string>
+
+    <!-- Toolbar -->
+    <string name="toolbar_custom_title">Toolbar Customization</string>
+    <string name="toolbar_mode_title">Toolbar Mode</string>
+    <string name="toolbar_mode_expandable">Expandable</string>
+    <string name="toolbar_mode_always">Always Show Toolbar</string>
+    <string name="toolbar_mode_suggestions">Suggestions Only</string>
+    <string name="toolbar_mode_hidden">Hidden</string>
+    <string name="toolbar_buttons_order">Toolbar Buttons &amp; Order</string>
+    <string name="toolbar_drag_hint">Drag the handle to reorder, or toggle switches to show/hide</string>
+    <string name="toolbar_customize_desc">Customize top toolbar</string>
+    <string name="toolbar_back_to_keyboard">Back to letters keyboard</string>
+    <string name="toolbar_available_buttons">Available Buttons</string>
+    <string name="toolbar_key_voice">Voice</string>
+    <string name="toolbar_key_emoji">Emoji</string>
+    <string name="toolbar_key_clipboard">Clipboard</string>
+    <string name="toolbar_key_numpad">Numpad</string>
+    <string name="toolbar_key_dpad">D-Pad</string>
+    <string name="toolbar_key_undo">Undo</string>
+    <string name="toolbar_key_redo">Redo</string>
+    <string name="toolbar_key_select_all">Select All</string>
+    <string name="toolbar_key_copy">Copy</string>
+    <string name="toolbar_key_cut">Cut</string>
+    <string name="toolbar_key_paste">Paste</string>
+    <string name="toolbar_key_one_handed">One-Handed</string>
+    <string name="toolbar_key_split">Split</string>
+    <string name="toolbar_key_incognito">Incognito</string>
+    <string name="toolbar_key_autocorrect">Autocorrect</string>
+    <string name="toolbar_key_clear_clipboard">Clear Clipboard</string>
+    <string name="toolbar_key_left">Cursor Left</string>
+    <string name="toolbar_key_right">Cursor Right</string>
+    <string name="toolbar_key_settings">Settings</string>
+    <string name="toolbar_key_ai_writing">AI Writing</string>
+    <string name="toolbar_key_translate">Translate</string>
+
+    <!-- Text Correction & Personal Dictionary -->
+    <string name="tc_title">Text Correction &amp; Dictionaries</string>
+    <string name="tc_show_suggestions">Show Suggestions</string>
+    <string name="tc_show_suggestions_sub">Suggest word completions and next words</string>
+    <string name="tc_autocorrect">Auto-Correction</string>
+    <string name="tc_autocorrect_sub">Automatically fix typos when pressing Space or punctuation</string>
+    <string name="tc_auto_cap">Auto-Capitalization</string>
+    <string name="tc_auto_cap_sub">Capitalize the first word of each sentence</string>
+    <string name="tc_double_space">Double-Space Period</string>
+    <string name="tc_double_space_sub">Double-tap spacebar to insert \'. \'</string>
+    <string name="tc_emoji_suggestions">Inline Emoji Suggestions</string>
+    <string name="tc_emoji_suggestions_sub">Show matching emojis in the suggestion strip</string>
+    <string name="tc_incognito">Incognito Mode</string>
+    <string name="tc_incognito_sub">Pause learning new typed words</string>
+    <string name="tc_dictionaries_title">Dictionaries &amp; Learned Words</string>
+    <string name="tc_dictionaries_stats">Learned words this session: %1$d • Imported wordlist entries: %2$d</string>
+    <string name="tc_import_wordlist">Import Wordlist</string>
+    <string name="tc_imported_toast">Imported %1$d dictionary words</string>
+    <string name="tc_clear_learned">Clear Learned Words</string>
+
+    <string name="pd_search_placeholder">Search personal words or shortcuts…</string>
+    <string name="pd_add_word">Add Word</string>
+    <string name="pd_edit_word">Edit Word</string>
+    <string name="pd_delete_word">Delete word</string>
+    <string name="pd_word_label">Word or Phrase</string>
+    <string name="pd_shortcut_label">Optional Shortcut (e.g. omw)</string>
+    <string name="pd_weight_label">Priority Weight (1–255)</string>
+    <string name="pd_weight_value">Weight %1$d</string>
+    <string name="pd_shortcut_value">Shortcut: %1$s</string>
+
+    <!-- Backup & About -->
+    <string name="backup_card_title">Local JSON Backup</string>
+    <string name="backup_card_desc">Export or restore all preferences, custom themes, custom layouts, personal dictionary words, and pinned clipboard entries.</string>
+    <string name="backup_export_btn">Export Backup</string>
+    <string name="backup_restore_btn">Restore Backup</string>
+    <string name="backup_copy_btn">Copy Backup JSON to Clipboard</string>
+    <string name="backup_export_success">Backup exported successfully.</string>
+    <string name="backup_export_failed">Export failed: %1$s</string>
+    <string name="backup_invalid_file">Invalid backup file: %1$s</string>
+    <string name="backup_copied_toast">Backup JSON copied to clipboard</string>
+
+    <string name="about_version">Version %1$s</string>
+    <string name="about_desc">Privacy-conscious, customizable open-source Android keyboard written in Kotlin &amp; Jetpack Compose.</string>
+    <string name="about_privacy_title">Local Typing &amp; On-Demand Cloud AI</string>
+    <string name="about_privacy_desc">Normal typing, layouts, emoji tables, suggestions, clipboard history, and on-device voice dispatch remain local. AI Writing and Translation only send text visible inside those panels to your configured proxy server when you explicitly run them.</string>
+    <string name="about_licenses_title">Open-Source Licenses</string>
+    <string name="about_licenses_desc">Licensed under GNU General Public License v3.0 (GPL-3.0) with AOSP Keyboard components under Apache License 2.0.</string>
+
+    <!-- AI Writing & Translation -->
+    <string name="ai_writing_title">AI Writing</string>
+    <string name="ai_translate_title">Translate</string>
+    <string name="ai_op_proofread">Proofread</string>
+    <string name="ai_op_rewrite">Rewrite</string>
+    <string name="ai_op_compose_message">Message</string>
+    <string name="ai_op_compose_email">Email</string>
+
+    <string name="ai_tone_same">Same Tone</string>
+    <string name="ai_tone_formal">Formal</string>
+    <string name="ai_tone_friendly">Friendly</string>
+    <string name="ai_tone_concise">Concise</string>
+
+    <string name="ai_lang_auto">Auto</string>
+    <string name="ai_lang_ar">Arabic</string>
+    <string name="ai_lang_en">English</string>
+
+    <string name="ai_input_placeholder_proofread">Write text or tap Paste…</string>
+    <string name="ai_input_placeholder_compose">Write brief points or idea…</string>
+    <string name="ai_selection_loaded_badge">Loaded from selection</string>
+    <string name="ai_action_paste">Paste</string>
+    <string name="ai_action_clear">Clear</string>
+    <string name="ai_action_run">Generate</string>
+    <string name="ai_action_retry">Retry</string>
+    <string name="ai_action_cancel">Cancel</string>
+    <string name="ai_action_insert">Insert</string>
+    <string name="ai_action_replace_selection">Replace Selection</string>
+    <string name="ai_action_copy">Copy</string>
+    <string name="ai_action_copy_only">Copy Only</string>
+    <string name="ai_action_configure_server">Server Settings</string>
+
+    <string name="ai_email_subject_label">Subject</string>
+    <string name="ai_email_body_label">Email Body</string>
+    <string name="ai_email_insert_subject">Insert Subject</string>
+    <string name="ai_email_insert_body">Insert Body</string>
+    <string name="ai_email_copy_subject">Copy Subject</string>
+    <string name="ai_email_copy_body">Copy Body</string>
+    <string name="ai_email_placeholder_hint">Missing details are marked in brackets so you can complete them before sending.</string>
+
+    <string name="ai_loading_writing">Working on your text…</string>
+    <string name="ai_loading_translating">Translating…</string>
+    <string name="ai_copied_notice">Copied to clipboard</string>
+
+    <string name="ai_translate_from">From</string>
+    <string name="ai_translate_to">To</string>
+    <string name="ai_translate_swap">Swap languages</string>
+    <string name="ai_translate_btn">Translate</string>
+    <string name="ai_translate_auto_switch">Auto-translate</string>
+    <string name="ai_translate_auto_off_hint">Off when closing panel or switching fields</string>
+    <string name="ai_translate_input_placeholder">Enter text to translate or tap Paste…</string>
+    <string name="ai_translate_detected_ar">Detected: Arabic</string>
+    <string name="ai_translate_detected_en">Detected: English</string>
+    <string name="ai_translate_preview_label">Translation</string>
+
+    <string name="ai_disclosure_title">Cloud AI Disclosure</string>
+    <string name="ai_disclosure_body">Only text visible inside this panel is sent to your configured Gemini proxy server when you tap Generate, Translate, or turn on Auto-translate. Keystrokes, clipboard history, and other fields are never uploaded automatically.</string>
+    <string name="ai_disclosure_accept">Continue</string>
+
+    <string name="ai_blocked_password">AI Writing and Translation are disabled in password fields for your security.</string>
+    <string name="ai_field_changed_copy_only">The active text field changed. Insertion is disabled — you can copy the result instead.</string>
+
+    <string name="ai_error_empty_input">Enter or paste text first.</string>
+    <string name="ai_error_unconfigured">AI service is not configured yet. Add GEMINI_API_KEY in AI Studio Secrets or enter your proxy URL in AI settings.</string>
+    <string name="ai_error_invalid_url">AI proxy server URL is invalid. Check your server URL in AI settings.</string>
+    <string name="ai_error_offline">No internet connection. Connect and try again.</string>
+    <string name="ai_error_unauthorized">Authentication failed (401/403). Check your proxy token or Gemini API key.</string>
+    <string name="ai_error_rate_limited">Too many requests to the AI service. Please wait a moment and retry.</string>
+    <string name="ai_error_timeout">The AI server took too long to respond. Please try again.</string>
+    <string name="ai_error_network">Could not reach the AI server. Check your connection and URL.</string>
+    <string name="ai_error_server">Server error (%1$s). Please try again.</string>
+
+    <!-- AI Proxy Settings Screen -->
+    <string name="ai_settings_card_title">Gemini AI Connection</string>
+    <string name="ai_settings_card_desc">HeliBoard automatically uses your configured AI proxy or Secrets key without manual setup. You can optionally override the proxy server below.</string>
+    <string name="ai_settings_status_label">Active mode: %1$s</string>
+    <string name="ai_settings_mode_user_proxy">Custom Proxy Server</string>
+    <string name="ai_settings_mode_build_proxy">Automatic Proxy (from build config)</string>
+    <string name="ai_settings_mode_auto_key">Automatic Gemini Mode (via Secrets)</string>
+    <string name="ai_settings_mode_unconfigured">Not configured yet</string>
+    <string name="ai_settings_url_label">Proxy Server Base URL (optional override)</string>
+    <string name="ai_settings_url_hint">https://your-proxy.example.com (or http://10.0.2.2:8080 on emulator)</string>
+    <string name="ai_settings_token_label">Proxy Bearer Token (optional)</string>
+    <string name="ai_settings_token_hint">Matches PROXY_AUTH_TOKENS on the proxy server</string>
+    <string name="ai_settings_saved_toast">AI proxy settings saved</string>
+    <string name="ai_settings_privacy_card_title">Privacy &amp; Disclosure</string>
+    <string name="ai_settings_privacy_card_desc">Cloud disclosure accepted: %1$s</string>
+    <string name="ai_settings_yes">Yes</string>
+    <string name="ai_settings_no">No</string>
+    <string name="ai_settings_reset_disclosure">Show Cloud Disclosure Again</string>
 </resources>

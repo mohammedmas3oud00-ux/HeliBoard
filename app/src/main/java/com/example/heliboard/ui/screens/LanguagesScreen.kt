@@ -45,10 +45,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.heliboard.R
 import com.example.heliboard.data.LayoutInfo
 import com.example.heliboard.data.SubtypeConfig
 import com.example.heliboard.theme.JetBrainsMonoFamily
@@ -80,9 +82,9 @@ fun LanguagesScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text("Languages & Layouts", style = MaterialTheme.typography.headlineMedium)
+                Text(stringResource(R.string.languages_title), style = MaterialTheme.typography.headlineMedium)
                 Text(
-                    "${layouts.size} built-in layouts available",
+                    stringResource(R.string.languages_builtin_count, layouts.size),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -93,7 +95,7 @@ fun LanguagesScreen(
             ) {
                 Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(4.dp))
-                Text("Add")
+                Text(stringResource(R.string.action_add))
             }
         }
 
@@ -129,7 +131,7 @@ fun LanguagesScreen(
                                 if (isActive) {
                                     Spacer(Modifier.width(8.dp))
                                     Text(
-                                        "ACTIVE",
+                                        stringResource(R.string.status_active),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.primary,
                                         fontWeight = FontWeight.Bold
@@ -137,7 +139,8 @@ fun LanguagesScreen(
                                 }
                             }
                             Text(
-                                text = "Layout: ${subtype.layoutId}" + if (hasCustom) " (customized)" else "",
+                                text = stringResource(R.string.languages_layout_label, subtype.layoutId) +
+                                    if (hasCustom) stringResource(R.string.languages_customized_suffix) else "",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -152,18 +155,18 @@ fun LanguagesScreen(
                         OutlinedButton(
                             onClick = { pickingLayoutForLocale = subtype.localeTag }
                         ) {
-                            Text("Change Layout")
+                            Text(stringResource(R.string.languages_change_layout))
                         }
                         OutlinedButton(
                             onClick = { editingLayoutId = subtype.layoutId }
                         ) {
                             Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(4.dp))
-                            Text("Edit Keys")
+                            Text(stringResource(R.string.languages_edit_keys))
                         }
                         if (settings.subtypes.size > 1) {
                             IconButton(onClick = { viewModel.removeSubtype(subtype.localeTag) }) {
-                                Icon(Icons.Default.Delete, contentDescription = "Remove language")
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.languages_remove_desc))
                             }
                         }
                     }
@@ -234,13 +237,13 @@ private fun LayoutPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Choose Keyboard Layout") },
+        title = { Text(stringResource(R.string.languages_choose_layout)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = query,
                     onValueChange = { query = it },
-                    placeholder = { Text("Search ${layouts.size} layouts...") },
+                    placeholder = { Text(stringResource(R.string.languages_search_layouts, layouts.size)) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
@@ -265,7 +268,7 @@ private fun LayoutPickerDialog(
                             if (info.id == currentLayoutId) {
                                 Icon(
                                     Icons.Default.Check,
-                                    contentDescription = "Selected",
+                                    contentDescription = stringResource(R.string.status_selected),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
@@ -275,7 +278,7 @@ private fun LayoutPickerDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Close") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_close)) }
         }
     )
 }
@@ -293,11 +296,11 @@ private fun LayoutSourceEditorDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Edit Layout: $layoutId") },
+        title = { Text(stringResource(R.string.languages_edit_layout_title, layoutId)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    text = "Each line is a key (with optional popup keys separated by spaces). Blank lines separate rows.",
+                    text = stringResource(R.string.languages_edit_layout_hint),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -313,18 +316,18 @@ private fun LayoutSourceEditorDialog(
                     TextButton(onClick = onReset) {
                         Icon(Icons.Default.Restore, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("Reset to Default")
+                        Text(stringResource(R.string.languages_reset_default))
                     }
                 }
             }
         },
         confirmButton = {
             Button(onClick = { onSave(text) }, enabled = text.isNotBlank()) {
-                Text("Save")
+                Text(stringResource(R.string.action_save))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         }
     )
 }
@@ -348,7 +351,7 @@ private fun AddSubtypeDialog(
             SubtypeConfig("pl-PL", "Polish", "qwerty", true),
             SubtypeConfig("ru-RU", "Russian", "russian", true),
             SubtypeConfig("uk-UA", "Ukrainian", "ukrainian", true),
-            SubtypeConfig("ar-SA", "Arabic", "arabic", true),
+            SubtypeConfig("ar", "العربية (Arabic)", "arabic", true),
             SubtypeConfig("fa-IR", "Persian (Farsi)", "farsi", true),
             SubtypeConfig("hi-IN", "Hindi", "hindi", true),
             SubtypeConfig("bn-BD", "Bengali", "bengali_unijoy", true),
@@ -363,10 +366,10 @@ private fun AddSubtypeDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add Language") },
+        title = { Text(stringResource(R.string.languages_add_title)) },
         text = {
             if (available.isEmpty()) {
-                Text("All preset languages are already added. You can change any language's layout from the list.")
+                Text(stringResource(R.string.languages_all_added))
             } else {
                 LazyColumn(modifier = Modifier.heightIn(max = 320.dp)) {
                     items(available, key = { it.localeTag }) { sub ->
@@ -386,14 +389,14 @@ private fun AddSubtypeDialog(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                            Icon(Icons.Default.Add, contentDescription = "Add ${sub.displayName}")
+                            Icon(Icons.Default.Add, contentDescription = sub.displayName)
                         }
                     }
                 }
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Close") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_close)) }
         }
     )
 }

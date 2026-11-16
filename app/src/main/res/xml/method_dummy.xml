@@ -32,4 +32,10 @@
         android:imeSubtypeLocale="es"
         android:imeSubtypeMode="keyboard"
         android:isAsciiCapable="true" />
+    <subtype
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/subtype_ar"
+        android:imeSubtypeLocale="ar"
+        android:imeSubtypeMode="keyboard"
+        android:isAsciiCapable="false" />
 </input-method>
