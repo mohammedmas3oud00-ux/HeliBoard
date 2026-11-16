@@ -1,6 +1,6 @@
 {
   "name": "HeliBoard",
-  "description": "Privacy-conscious and customizable open-source offline Android keyboard with multi-language layouts, themes, emoji picker, clipboard history, and personal dictionary.",
+  "description": "Customizable Android keyboard with multilingual layouts, themes, clipboard history, voice dictation, and optional AI writing and translation tools.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
